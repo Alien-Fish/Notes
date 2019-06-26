@@ -9,6 +9,7 @@ http://127.0.0.1:9200/index_name/_search?pretty
 
 ## 4.测试分词(ik_smart、ik_max_word)
 http://127.0.0.1:9200/index_name/_analyze?analyzer=ik_smart&pretty=true&text=我是中国人
+
 http://127.0.0.1:9200/index_name/_analyze?analyzer=ik_max_word&pretty=true&text=我是中国人
 
 
