@@ -1,3 +1,4 @@
+# CenterOs7 安装RabbitMq3.6.15
 ## 初始化环境
 （1）、删除rabbitmq:  
 --卸载  
