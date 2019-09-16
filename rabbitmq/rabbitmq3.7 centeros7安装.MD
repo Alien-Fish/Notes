@@ -1,4 +1,4 @@
-##初始化环境
+## 初始化环境
 （1）、删除rabbitmq: 
 --卸载
 --停止服务
@@ -16,7 +16,7 @@ rm -rf /usr/lib64/erlang
 rm -rf /var/lib/rabbitmq
 
 
-##一、安装erlang依赖环境
+## 一、安装erlang依赖环境
 1、安装rabbitMQ依赖 erlang
 注意：RabbitMQ 3.6.15 依赖的erlang版本
 操作系统：CentOS7.X
@@ -56,7 +56,7 @@ source /etc/profile
 1.2.7查看
 erl
 
-##二、安装rabbitmq
+## 二、安装rabbitmq
 2.1 安装rabbitmq    
 下载官网rabbitmq 3.6.15
 wget https://www.rabbitmq.com/releases/rabbitmq-server/v3.6.15/rabbitmq-server-3.6.15-1.el7.noarch.rpm
@@ -82,7 +82,7 @@ rabbitmqctl delete_user guest
 访问地址
 http://rabbitmq-server:15672/
 
-##三、安装rabbitmq延迟插件
+## 三、安装rabbitmq延迟插件
 下载 wget https://dl.bintray.com/rabbitmq/community-plugins/3.6.x/rabbitmq_delayed_message_exchange/rabbitmq_delayed_message_exchange-20171215-3.6.x.zip
 解压 unzip rabbitmq_delayed_message_exchange-20171215-3.6.x.zip
 移动到插件目录  mv rabbitmq_delayed_message_exchange-20171215-3.6.x.ez /usr/lib/rabbitmq/lib/rabbitmq_server-3.6.15/plugins/
