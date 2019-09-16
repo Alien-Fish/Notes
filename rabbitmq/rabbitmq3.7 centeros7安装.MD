@@ -1,10 +1,10 @@
 ## 初始化环境
-（1）、删除rabbitmq: 
---卸载
---停止服务
-rabbitmqctl app_stop
-yum list | grep rabbitmq
-yum -y remove rabbitmq-server.noarch
+（1）、删除rabbitmq:  
+--卸载  
+--停止服务  
+rabbitmqctl app_stop  
+yum list | grep rabbitmq  
+yum -y remove rabbitmq-server.noarch  
 
 （2）删除erlang：
 yum list | grep erlang
