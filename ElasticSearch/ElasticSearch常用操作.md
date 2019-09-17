@@ -1,3 +1,11 @@
+## 新增文档
+PUT /index_name/doc/1
+{
+   "name":"jack",
+   "age":18,
+   "gender":"male"
+}
+
 ## 列出所有文档
 http://127.0.0.1:9200/_cat/indices?v
 
