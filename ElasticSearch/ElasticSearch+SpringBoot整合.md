@@ -66,7 +66,7 @@
         private String title;
         private String summary;
         private String content;
-        @Field(index = FieldIndex.not_analyzed)  // 不做全文检索字段  
+    }  
 
 上面是我的部分代码，注意要对实体对象有个@Document注解，对象的id也有个@id的注解，其中还有个@Field的注解，这是对该字段的说明，下面对这些注解给出详细解释  
 
