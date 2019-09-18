@@ -66,6 +66,33 @@
         private String title;
         private String summary;
         private String content;
+        /**
+         - 用户名，全匹配不做分词
+         - */
+        @Field(type = FieldType.Keyword)
+        private String username;
+
+        /**
+         - 客户端UUID，全匹配不做分词
+         - */
+        @Field(type = FieldType.Keyword)
+        private String clientUUID;
+
+        /**
+         - 历史检索关键字
+         - 聚合开启："fielddata": true
+         - 原因：5.x之后，Elasticsearch对排序、聚合所依据的字段用单独的数据结构(fielddata)缓存到内存里了，但是在text字段上默认是禁用的，如果有需要单独开启，这样做的目的是为了节省内存空间。
+         - 官方文档地址：https://www.elastic.co/guide/en/elasticsearch/reference/current/fielddata.html
+         *
+         */
+        @Field(type = FieldType.Text, fielddata = true, analyzer = "ik_max_word")
+        private String hisKeywork;
+
+        /**
+         - 创建时间，不分词做排序
+         */
+        @Field(type = FieldType.Keyword)
+        private String createTime;
     }  
 
 上面是我的部分代码，注意要对实体对象有个@Document注解，对象的id也有个@id的注解，其中还有个@Field的注解，这是对该字段的说明，下面对这些注解给出详细解释  
