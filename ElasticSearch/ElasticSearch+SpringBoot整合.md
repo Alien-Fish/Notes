@@ -19,7 +19,7 @@
         <artifactId>spring-boot-starter-data-elasticsearch</artifactId>  
     </dependency>  
 
-1.1.2在application.properties添加elasticsearch的配置    
+1.1.3在application.properties添加elasticsearch的配置    
 
     #es的默认名称,如果安装es时没有做特殊的操作名字都是此名称
     spring.data.elasticsearch.cluster-name=elasticsearch
