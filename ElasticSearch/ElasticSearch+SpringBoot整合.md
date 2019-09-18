@@ -2,13 +2,22 @@
 1.1在工程中引入相关的jar包   
  1.1.1 在build.gradle中添加需要的jar包  
 
-      我创建的gradle工程，对应的maven工程也是一样，添加对应的jar包即可  
+    gradle工程  
 
     // 添加  Spring Data Elasticsearch 的依赖
     compile('org.springframework.boot:spring-boot-starter-data-elasticsearch')
      
     // 添加  JNA 的依赖，java访问当前操作系统需要的包
     compile('net.java.dev.jna:jna:4.3.0')
+ 1.1.2 在pom.xml中添加需要的jar包  
+
+    maven工程  
+
+    // 添加  Spring Data Elasticsearch 的依赖  
+    <dependency>  
+        <groupId>org.springframework.boot</groupId>  
+        <artifactId>spring-boot-starter-data-elasticsearch</artifactId>  
+    </dependency>  
 
 1.1.2在application.properties添加elasticsearch的配置    
 
