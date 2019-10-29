@@ -26,7 +26,7 @@ master_log_pos=3260;
 
 START SLAVE;
 
-# master_log_file 和 master_log_pos 根据查询主库赋值
+#master_log_file 和 master_log_pos 根据查询主库赋值
 
 #查看从库状态		
 show slave status;
