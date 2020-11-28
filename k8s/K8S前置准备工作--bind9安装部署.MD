@@ -1,12 +1,11 @@
-
-## 基础依赖
+## 1.基础依赖
 ### 关闭防火墙
 systemctl stop firewalld
 
 ### 安装基础依赖工具
 yum install wget net-tools telnet tree nmap sysstat lrzsz dosunix bind-utils -y
 
-## bind安装和配置
+## 2.bind安装和配置
 ### 10.4.7.11上安装DNS解析工具bind
 yum install bind -y
 
@@ -22,7 +21,7 @@ options {
         recursing-file  "/var/named/data/named.recursing";
         secroots-file   "/var/named/data/named.secroots";
         allow-query     { any; };
-        forwarders      {10.4.7.254; }
+        forwarders      {10.4.7.254; };
 
         /*
          - If you are building an AUTHORITATIVE DNS server, do NOT enable recursion.
@@ -49,12 +48,54 @@ options {
 };
 ```
 更新内容:  
-## 监听地址
+##监听地址
 listen-on port 53 { 10.4.7.11; };
-## 白名单
+##白名单
 allow-query     { any; };
-## 网关
-forwarders      {10.4.7.254; }
-## 关闭DNS
+##网关
+forwarders      {10.4.7.254; };
+##关闭DNS
 dnssec-enable no;
 dnssec-validation no;
+
+### named-checkconf
+执行检查命令named-checkconf，无报错则正常
+
+### bind区域配置
+vi /etc/named.rfc1912.zones
+```base
+zone "host.com" IN {
+        type master;
+        file "host.com.zone";
+        allow-update { 10.4.7.11; };
+};
+
+zone "lean.com" IN {
+        type master;
+        file "lean.com.zone";
+        allow-update { 10.4.7.11; };
+};
+```
+新增主机域host.com和业务域lean.com
+
+### bind区域数据文件配置
+vi /var/named/host.com.zone
+```base
+$ORIGIN host.com.
+$TTL 600        ;  10 minutes
+@       IN SOA  dns.host.com. dnsadmin.host.com. (
+                                20201128   ; serial
+                                10800      ; refresh (3 hours)
+                                900        ; retry (1 week)
+                                604800     ; expire (1 week) 
+                                86400      ; minimun (1 day)
+                                )
+                         NS dns.host.com.
+$TTL 60 ; 1minute
+dns               A      10.4.7.11
+HDSS7-11          A      10.4.7.11
+HDSS7-12          A      10.4.7.12
+HDSS7-21          A      10.4.7.21
+HDSS7-22          A      10.4.7.22
+HDSS7-200         A      10.4.7.200
+```
