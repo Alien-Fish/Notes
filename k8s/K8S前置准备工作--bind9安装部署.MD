@@ -1,16 +1,16 @@
 ## 1.基础依赖
 ### 关闭防火墙
-systemctl stop firewalld
+[root@hdss7-11 ~]# systemctl stop firewalld
 
 ### 安装基础依赖工具
-yum install wget net-tools telnet tree nmap sysstat lrzsz dosunix bind-utils -y
+[root@hdss7-11 ~]# yum install wget net-tools telnet tree nmap sysstat lrzsz dosunix bind-utils -y
 
 ## 2.bind安装和配置
 ### 10.4.7.11上安装DNS解析工具bind
-yum install bind -y
+[root@hdss7-11 ~]# yum install bind -y
 
 ### bind配置
-vi /etc/named.conf
+[root@hdss7-11 ~]# vi /etc/named.conf
 ```base
 options {
         listen-on port 53 { 10.4.7.11; };
@@ -59,10 +59,11 @@ dnssec-enable no;
 dnssec-validation no;  
 
 ### named-checkconf
+[root@hdss7-11 ~]# named-checkconf  
 执行检查命令named-checkconf，无报错则正常
 
 ### bind区域配置
-vi /etc/named.rfc1912.zones
+[root@hdss7-11 ~]# vi /etc/named.rfc1912.zones
 ```base
 zone "host.com" IN {
         type master;
@@ -80,7 +81,7 @@ zone "lean.com" IN {
 
 ### bind区域数据文件配置
 #### 主机域配置
-vi /var/named/host.com.zone
+[root@hdss7-11 ~]# vi /var/named/host.com.zone
 ```base
 $ORIGIN host.com.
 $TTL 600        ;  10 minutes
@@ -101,7 +102,7 @@ HDSS7-22          A      10.4.7.22
 HDSS7-200         A      10.4.7.200
 ```
 #### 业务域配置
-vi /var/named/lean.com.zone
+[root@hdss7-11 ~]# vi /var/named/lean.com.zone
 ```base
 $ORIGIN lean.com.
 $TTL 600        ;  10 minutes
@@ -118,6 +119,7 @@ dns               A      10.4.7.11
 ```
 
 ### named-checkconf
+[root@hdss7-11 ~]# named-checkconf  
 执行检查命令named-checkconf，无报错则正常
 
 ### 启动named
@@ -127,3 +129,61 @@ tcp        0      0 127.0.0.1:953           0.0.0.0:*               LISTEN      
 tcp        0      0 10.4.7.11:53            0.0.0.0:*               LISTEN      1829/named          
 tcp6       0      0 ::1:953                 :::*                    LISTEN      1829/named          
 udp        0      0 10.4.7.11:53            0.0.0.0:*                           1829/named 
+
+### 解析DNS
+[root@hdss7-11 ~]# dig -t A hdss7-21.host.com @10.4.7.11 +short  
+10.4.7.21  
+[root@hdss7-11 ~]# dig -t A hdss7-20.host.com @10.4.7.11 +short  
+[root@hdss7-11 ~]# dig -t A hdss7-200.host.com @10.4.7.11 +short  
+10.4.7.200  
+
+### 配置客户端使用DNS服务
+[root@hdss7-11 ~]# vi /etc/sysconfig/network-scripts/ifcfg-ens33
+```base
+DNS1=10.4.7.11
+```
+DNS1=10.4.7.254 改成 DNS1=10.4.7.11  
+
+[root@hdss7-11 ~]# systemctl restart network  
+[root@hdss7-11 ~]# cat /etc/resolv.conf  
+
+nameserver 10.4.7.11  
+
+[root@hdss7-11 ~]# ping badu.com  
+PING badu.com (47.254.33.193) 56(84) bytes of data.  
+64 bytes from 47.254.33.193 (47.254.33.193): icmp_seq=1 ttl=128 time=176 ms  
+64 bytes from 47.254.33.193 (47.254.33.193): icmp_seq=2 ttl=128 time=176 ms  
+64 bytes from 47.254.33.193 (47.254.33.193): icmp_seq=3 ttl=128 time=173 ms  
+
+[root@hdss7-11 ~]# ping hdss7-21.host.com  
+PING HDSS7-21.host.com (10.4.7.21) 56(84) bytes of data.  
+64 bytes from 10.4.7.21 (10.4.7.21): icmp_seq=1 ttl=64 time=0.844 ms  
+64 bytes from 10.4.7.21 (10.4.7.21): icmp_seq=2 ttl=64 time=0.331 ms  
+
+备注：其他vm机器也执行
+
+### 匹配域名后缀，主机域使用短域名
+[root@hdss7-11 ~]# vi /etc/resolv.conf
+```base
+search host.com
+```
+[root@hdss7-11 ~]# ping hdss7-21  
+PING HDSS7-21.host.com (10.4.7.21) 56(84) bytes of data.  
+64 bytes from 10.4.7.21 (10.4.7.21): icmp_seq=1 ttl=64 time=0.532 ms  
+64 bytes from 10.4.7.21 (10.4.7.21): icmp_seq=2 ttl=64 time=0.365 ms  
+
+备注：其他vm机器也执行  
+
+### 配置windows客户端
+控制面板\网络和 Internet\网络连接\VMware Virtual Ethernet Adapter for VMnet8\TCP/IP4属性  
+首选DNS服务器改成10.4.7.11  
+
+C:\Users\10744>ping hdss7-200.host.com  
+
+正在 Ping HDSS7-200.host.com [10.4.7.200] 具有 32 字节的数据:  
+来自 10.4.7.200 的回复: 字节=32 时间<1ms TTL=64  
+来自 10.4.7.200 的回复: 字节=32 时间<1ms TTL=64  
+
+备注：如果ping不同，修改vm8和本地网的自动跃点为10  
+
+至此，局域网DNS配置就成功了！
