@@ -2,10 +2,10 @@
 ### 关闭防火墙
 [root@hdss7-11 ~]# systemctl stop firewalld
 
-### 安装基础依赖工具
+### 2.安装基础依赖工具
 [root@hdss7-11 ~]# yum install wget net-tools telnet tree nmap sysstat lrzsz dosunix bind-utils -y
 
-## 2.bind安装和配置
+## 3.bind安装和配置
 ### 10.4.7.11上安装DNS解析工具bind
 [root@hdss7-11 ~]# yum install bind -y
 
@@ -174,7 +174,7 @@ PING HDSS7-21.host.com (10.4.7.21) 56(84) bytes of data.
 
 备注：其他vm机器也执行  
 
-### 配置windows客户端
+## 4.配置windows客户端
 控制面板\网络和 Internet\网络连接\VMware Virtual Ethernet Adapter for VMnet8\TCP/IP4属性  
 首选DNS服务器改成10.4.7.11  
 
