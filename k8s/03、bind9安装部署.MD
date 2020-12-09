@@ -1,5 +1,5 @@
 ## 1.基础依赖
-### 关闭防火墙
+### 关闭防火墙 or 开放dns端口
 [root@hdss7-11 ~]# systemctl stop firewalld
 
 ### 安装基础依赖工具
@@ -150,6 +150,7 @@ udp        0      0 10.4.7.11:53            0.0.0.0:*                           
 success  
 [root@hdss7-200 ~]# firewall-cmd --zone=public --permanent --list-services  
 dhcpv6-client dns ssh   
+[root@hdss7-200 ~]# systemctl restart firewalld.service
 备注：其他vm机器也执行  
 
 ### 解析DNS
