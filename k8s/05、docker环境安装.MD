@@ -19,6 +19,9 @@
 - registry-mirrors：镜像地址，使用国内的  
 - live-restore：daemon进程关闭，容器进程独立pid
 
+### 创建docker镜像存放路劲 
+[root@hdss7-21 ~]# mkdir -p /data/docker
+
 ### 启动docker服务
 [root@hdss7-200 docker]# systemctl start docker.service  
 

@@ -122,13 +122,35 @@ dns               A      10.4.7.11
 [root@hdss7-11 ~]# named-checkconf  
 执行检查命令named-checkconf，无报错则正常
 
+### 禁用ip6，让bind仅支持ipv4
+[root@hdss7-11 ~]# vi /etc/sysconfig/named  
+OPTIONS="-4"  
+
 ### 启动named
-[root@hdss7-11 ~]# systemctl start named  
+[root@hdss7-11 ~]# systemctl start named
+[root@hdss7-11 ~]# systemctl enable named    
 [root@hdss7-11 ~]# netstat -luntp|grep 53  
 tcp        0      0 127.0.0.1:953           0.0.0.0:*               LISTEN      1829/named          
 tcp        0      0 10.4.7.11:53            0.0.0.0:*               LISTEN      1829/named          
 tcp6       0      0 ::1:953                 :::*                    LISTEN      1829/named          
-udp        0      0 10.4.7.11:53            0.0.0.0:*                           1829/named 
+udp        0      0 10.4.7.11:53            0.0.0.0:*                           1829/named  
+[root@hdss7-11 ~]# systemctl status named.service   
+● named.service - Berkeley Internet Name Domain (DNS)  
+   Loaded: loaded (/usr/lib/systemd/system/named.service; enabled; vendor preset: disabled)  
+   Active: active (running) since Wed 2020-12-09 22:29:06 CST; 7min ago  
+  Process: 1159 ExecStart=/usr/sbin/named -u named -c ${NAMEDCONF} $OPTIONS (code=exited, status=0/SUCCESS)  
+  Process: 1119 ExecStartPre=/bin/bash -c if [ ! "$DISABLE_ZONE_CHECKING" == "yes" ]; then /usr/sbin/named-checkconf -z "$NAMEDCONF"; else echo "Checking of zone files  is disabled"; fi (code=exited, status=0/SUCCESS)  
+ Main PID: 1178 (named)  
+   CGroup: /system.slice/named.service  
+           └─1178 /usr/sbin/named -u named -c /etc/named.conf -4  
+
+
+### 防火墙上开放DNS服务
+[root@hdss7-200 ~]# firewall-cmd --zone=public --permanent --add-service=dns  
+success  
+[root@hdss7-200 ~]# firewall-cmd --zone=public --permanent --list-services  
+dhcpv6-client dns ssh   
+备注：其他vm机器也执行  
 
 ### 解析DNS
 [root@hdss7-11 ~]# dig -t A hdss7-21.host.com @10.4.7.11 +short  
@@ -173,6 +195,15 @@ PING HDSS7-21.host.com (10.4.7.21) 56(84) bytes of data.
 64 bytes from 10.4.7.21 (10.4.7.21): icmp_seq=2 ttl=64 time=0.365 ms  
 
 备注：其他vm机器也执行  
+
+### 使用nslookup测试DNS服务
+[root@hdss7-11 ~]# nslookup hdss7-200.host.com  
+Server:		10.4.7.11  
+Address:	10.4.7.11#53  
+
+Name:	HDSS7-200.host.com  
+Address: 10.4.7.200  
+
 
 ## 4.配置windows客户端
 控制面板\网络和 Internet\网络连接\VMware Virtual Ethernet Adapter for VMnet8\TCP/IP4属性  
