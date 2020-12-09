@@ -2,10 +2,10 @@
 ### 关闭防火墙
 [root@hdss7-11 ~]# systemctl stop firewalld
 
-### 2.安装基础依赖工具
+### 安装基础依赖工具
 [root@hdss7-11 ~]# yum install wget net-tools telnet tree nmap sysstat lrzsz dosunix bind-utils -y
 
-## 3.bind安装和配置
+## 2.bind安装和配置
 ### 10.4.7.11上安装DNS解析工具bind
 [root@hdss7-11 ~]# yum install bind -y
 
@@ -205,7 +205,7 @@ Name:	HDSS7-200.host.com
 Address: 10.4.7.200  
 
 
-## 4.配置windows客户端
+## 3.配置windows客户端
 控制面板\网络和 Internet\网络连接\VMware Virtual Ethernet Adapter for VMnet8\TCP/IP4属性  
 首选DNS服务器改成10.4.7.11  
 
