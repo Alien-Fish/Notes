@@ -1,3 +1,4 @@
+## 安装
 ### harbor的github官网地址
 https://github.com/goharbor/harbor/tags
 
@@ -141,3 +142,54 @@ success
 成功，在浏览器访问harbor.lean.com  
 账号：admin  
 密码：Harbor12345  
+登录harbor，创建public项目  
+
+### 启动/关闭
+[root@hdss7-200 harbor]# pwd  
+/opt/harbor  
+[root@hdss7-200 harbor]# docker-compose up -d  
+harbor-log is up-to-date  
+Starting registry ...   
+registryctl is up-to-date  
+Starting registry      ... done  
+Starting harbor-portal ... done  
+Starting redis         ... done  
+Starting harbor-core   ... done  
+Starting harbor-jobservice ... done  
+Starting nginx             ... done  
+[root@hdss7-200 harbor]# docker-compose stop    
+
+### 配置docker私服
+[root@hdss7-200 harbor]# vi /etc/docker/daemon.json   
+{   
+   "graph": "/data/docker",  
+   "storage-driver": "overlay2",  
+   "insecure-registries": ["registry.access.redhat.com", "harbor.lean.com"],  
+   "registry-mirrors": ["http://hub-mirror.c.163.com"],  
+   "bip": "172.7.200.1/24"  
+}  
+更新"insecure-registries": ["registry.access.redhat.com", "harbor.lean.com"], 加入 harbor.lean.com
+
+## 制作镜像上传到harbor
+### 登录harbor
+[root@hdss7-200 harbor]# docker login harbor.lean.com  
+Username: admin  
+Password: Harbor12345  
+
+### 制作镜像
+[root@hdss7-200 harbor]# docker pull nginx:1.7.9  
+[root@hdss7-200 harbor]# docker images|grep 1.7.9  
+nginx                           1.7.9               84581e99d807        5 years ago         91.7MB  
+
+### 上传镜像
+[root@hdss7-200 harbor]# docker tag 84581e99d807 harbor.lean.com/public/nginx:v1.7.9    
+[root@hdss7-200 harbor]# docker push harbor.lean.com/public/nginx:v1.7.9  
+The push refers to repository [harbor.lean.com/public/nginx]  
+5f70bf18a086: Pushed   
+4b26ab29a475: Pushed   
+ccb1d68e3fb7: Pushed    
+e387107e2065: Pushed   
+63bf84221cce: Pushed   
+e02dce553481: Pushed   
+dea2e4984e29: Pushed   
+v1.7.9: digest: sha256:b1f5935eb2e9e2ae89c0b3e2e148c19068d91ca502e857052f14db230443e4c2 size: 3012  
