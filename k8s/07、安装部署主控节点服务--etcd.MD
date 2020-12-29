@@ -108,7 +108,7 @@ specifically, section 10.2.3 ("Information Requirements").
 [root@hdss7-12 ~]# cd /opt/  
 [root@hdss7-12 opt]# mkdir -p /opt/etcd/certs /data/etcd /data/logs/etcd-server  
 [root@hdss7-12 opt]# cd certs  
-[root@hdss7-12 certs]# scp hdss7-200.host.com:/opt/ssl/certs/ca.pem .  
+[root@hdss7-12 certs]# scp hdss7-200.host.com:/opt/ssl/ca.pem .  
 [root@hdss7-12 certs]# scp hdss7-200.host.com:/opt/ssl/certs/etcd-peer.pem .    
 [root@hdss7-12 certs]# scp hdss7-200.host.com:/opt/ssl/certs/etcd-peer-key.pem .  
 [root@hdss7-12 certs]# ll  
@@ -190,3 +190,120 @@ etcd-server-7-12                 RUNNING   pid 1829, uptime 0:01:45
 tcp        0      0 10.4.7.12:2379          0.0.0.0:*               LISTEN      1830/./etcd           
 tcp        0      0 127.0.0.1:2379          0.0.0.0:*               LISTEN      1830/./etcd            
 tcp        0      0 10.4.7.12:2380          0.0.0.0:*               LISTEN      1830/./etcd  
+
+#### 关闭防火墙或者开放etcd端口  
+[root@hdss7-12 etcd]# systemctl stop firewalld  
+
+## 10.4.7.21安装etcd
+### 创建etcd用户  
+[root@hdss7-21 ~]# useradd -s /sbin/nologin -M etcd  
+[root@hdss7-21 etcd]# id etcd  
+uid=1001(etcd) gid=1001(etcd) groups=1001(etcd)  
+
+### 下载etcd安装包
+下载地址：https://github.com/etcd-io/etcd/tags  
+[root@hdss7-21 opt]# cd /usr/src/  
+[root@hdss7-12 src]# wget https://github.com/etcd-io/etcd/releases/download/v3.4.14/etcd-v3.4.14-linux-amd64.tar.gz  
+
+### 解压安装etcd
+[root@hdss7-21 ~]# cd /usr/src/  
+[root@hdss7-21 src]# scp  hdss7-12.host.com:/usr/src/etcd-v3.4.14-linux-amd64.tar.gz .  
+
+### 解压安装etcd
+[root@hdss7-21 src]# tar xfv etcd-v3.4.14-linux-amd64.tar.gz -C /opt/  
+[root@hdss7-21 src]# cd /opt/  
+[root@hdss7-21 opt]# mv etcd-v3.4.14-linux-amd64/ etcd-v3.4.14  
+[root@hdss7-21 opt]# ln -s /opt/etcd-v3.4.14/ /opt/etcd  
+[root@hdss7-21 opt]# cd etcd  
+
+### 传输证书
+[root@hdss7-21 ~]# cd /opt/  
+[root@hdss7-21 opt]# mkdir -p /opt/etcd/certs /data/etcd /data/logs/etcd-server  
+[root@hdss7-21 opt]# cd certs  
+[root@hdss7-21 certs]# scp hdss7-200.host.com:/opt/ssl/ca.pem .  
+[root@hdss7-21 certs]# scp hdss7-200.host.com:/opt/ssl/certs/etcd-peer.pem .    
+[root@hdss7-21 certs]# scp hdss7-200.host.com:/opt/ssl/certs/etcd-peer-key.pem .  
+[root@hdss7-21 certs]# ll  
+total 12  
+-rw-r--r--. 1 root root 1318 Dec 12 12:05 ca.pem  
+-rw-------. 1 root root 1679 Dec 12 12:09 etcd-peer-key.pem  
+-rw-r--r--. 1 root root 1363 Dec 12 12:08 etcd-peer.pem 
+
+### 制作etcd启动脚本
+[root@hdss7-21 certs]# cd ..
+[root@hdss7-21 etcd]# vi etcd-server-startup.sh  
+```base
+#!/bin/sh
+./etcd --name etcd-server-7-21 \
+       --data-dir /data/etcd/etcd-server \
+       --listen-peer-urls https://10.4.7.21:2380 \
+       --listen-client-urls https://10.4.7.21:2379,http://127.0.0.1:2379 \
+       --quota-backend-bytes 8000000000 \
+       --initial-advertise-peer-urls https://10.4.7.21:2380 \
+       --advertise-client-urls https://10.4.7.21:2379,http://127.0.0.1:2379 \
+       --initial-cluster  etcd-server-7-12=https://10.4.7.12:2380,etcd-server-7-21=https://10.4.7.21:2380,etcd-server-7-22=https://10.4.7.22:2380 \
+       --cert-file ./certs/etcd-peer.pem \
+       --key-file ./certs/etcd-peer-key.pem \
+       --client-cert-auth \
+       --trusted-ca-file ./certs/ca.pem \
+       --peer-cert-file ./certs/etcd-peer.pem \
+       --peer-key-file ./certs/etcd-peer-key.pem \
+       --peer-client-cert-auth \
+       --peer-trusted-ca-file ./certs/ca.pem \
+       --log-outputs stdout
+```
+[root@hdss7-21 etcd]# chmod +x etcd-server-startup.sh  
+#### 更新etcd目录属主
+[root@hdss7-21 etcd]# chown -R etcd.etcd /opt/etcd-v3.4.14/  
+[root@hdss7-21 etcd]# chown -R etcd.etcd /data/etcd/  
+[root@hdss7-21 etcd]# chown -R etcd.etcd /data/logs/etcd-server/  
+
+#### 安装管理后端进程软件
+[root@hdss7-21 etcd]# yum install supervisor -y  
+[root@hdss7-21 etcd]# systemctl start supervisord  
+[root@hdss7-21 etcd]# systemctl enable supervisord  
+
+[root@hdss7-21 etcd]# vi /etc/supervisord.d/etcd-server.ini  
+```base
+[program:etcd-server-7-21]
+command=/opt/etcd/etcd-server-startup.sh
+numprocs=1
+directory=/opt/etcd
+autostart=true
+autorestart=true
+startsecs=30
+startretries=3
+exitcodes=0,2
+stopsignal=QUIT
+stopwaitsecs=10
+user=etcd
+redirect_stderr=true
+stdout_logfile=/data/logs/etcd-server/etcd.stdout.log
+stdout_logfile_maxbytes=64MB
+stdout_logfile_backups=4
+stdout_capture_maxbytes=1MB
+stdout_events_enabled=false
+```
+
+[root@hdss7-21 etcd]# supervisorctl update
+etcd-server-7-21: added process group  
+[root@hdss7-21 etcd]# supervisorctl start etcd-server-7-21  
+[root@hdss7-21 etcd]# supervisorctl status  
+etcd-server-7-21                 RUNNING   pid 1829, uptime 0:01:45  
+[root@hdss7-21 etcd]# tail -fn 200 /data/logs/etcd-server/etcd.stdout.log   
+[root@hdss7-21 etcd]# netstat -luntp|grep etcd  
+tcp        0      0 10.4.7.21:2379          0.0.0.0:*               LISTEN      1656/./etcd            
+tcp        0      0 127.0.0.1:2379          0.0.0.0:*               LISTEN      1656/./etcd              
+tcp        0      0 10.4.7.21:2380          0.0.0.0:*               LISTEN      1656/./etcd  
+
+#### 关闭防火墙或者开放etcd端口  
+[root@hdss7-21 etcd]# systemctl stop firewalld  
+
+#### 查看集群状态  
+[root@hdss7-21 etcd]# ./etcdctl member list  
+988139385f78284, started, etcd-server-7-22, https://10.4.7.22:2380, , false  
+5a0ef2a004fc4349, started, etcd-server-7-21, https://10.4.7.21:2380, http://127.0.0.1:2379,https://10.4.7.21:2379, false  
+f4a0cb0a765574a8, started, etcd-server-7-12, https://10.4.7.12:2380, http://127.0.0.1:2379,https://10.4.7.12:2379, false  
+
+## 10.4.7.22安装etcd
+安装过程同10.4.7.12、10.4.7.21，这里省略安装步骤
