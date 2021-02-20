@@ -219,7 +219,7 @@ uid=1001(etcd) gid=1001(etcd) groups=1001(etcd)
 ### 传输证书
 [root@hdss7-21 ~]# cd /opt/  
 [root@hdss7-21 opt]# mkdir -p /opt/etcd/certs /data/etcd /data/logs/etcd-server  
-[root@hdss7-21 opt]# cd certs  
+[root@hdss7-21 opt]# cd etcd/certs/  
 [root@hdss7-21 certs]# scp hdss7-200.host.com:/opt/ssl/ca.pem .  
 [root@hdss7-21 certs]# scp hdss7-200.host.com:/opt/ssl/certs/etcd-peer.pem .    
 [root@hdss7-21 certs]# scp hdss7-200.host.com:/opt/ssl/certs/etcd-peer-key.pem .  
@@ -298,6 +298,11 @@ tcp        0      0 10.4.7.21:2380          0.0.0.0:*               LISTEN      
 
 #### 关闭防火墙或者开放etcd端口  
 [root@hdss7-21 etcd]# systemctl stop firewalld  
+
+[root@hdss7-21 etcd]# firewall-cmd --zone=public --add-port=2379/tcp --permanent  
+[root@hdss7-21 etcd]# firewall-cmd --zone=public --add-port=2380/tcp --permanent  
+[root@hdss7-21 etcd]# firewall-cmd --reload  
+[root@hdss7-21 etcd]# firewall-cmd --query-port=2379/tcp  
 
 #### 查看集群状态  
 [root@hdss7-21 etcd]# ./etcdctl member list  
