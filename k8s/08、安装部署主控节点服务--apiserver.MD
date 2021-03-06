@@ -1,10 +1,13 @@
 ## 部署安装说明
 ### 部署机器
 10.4.7.21   
-10.4.7.22  
+10.4.7.22  这里省略安装
 
 ### 下载安装
-地址：https://dl.k8s.io/v1.20.4/kubernetes-server-linux-amd64.tar.gz
+地址：https://dl.k8s.io/v1.20.4/kubernetes-server-linux-amd64.tar.gz  
+试了v1.20.4启动需要配置ServiceAccount，改回1.15版本。  
+地址：https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG-1.15.md#downloads-for-v1152  
+以下自行切换版本    
 
 [root@hdss7-21 ~]# cd /opt/src/  
 [root@hdss7-21 ~]# wget https://dl.k8s.io/v1.20.4/kubernetes-server-linux-amd64.tar.gz
@@ -130,14 +133,14 @@ total 48
 ## 10.4.7.21 
 ### 下发证书
 [root@hdss7-21 kubernetes]# cd /opt/kubernetes/server/bin   
-[root@hdss7-21 bin]# mkdir cert/  
-[root@hdss7-21 cert]# scp hdss7-200.host.com:/opt/ssl/certs/apiserver-key.pem .  
-[root@hdss7-21 cert]# scp hdss7-200.host.com:/opt/ssl/certs/apiserver.pem .    
-[root@hdss7-21 cert]# scp hdss7-200.host.com:/opt/ssl/ca.pem .  
-[root@hdss7-21 cert]# scp hdss7-200.host.com:/opt/ssl/ca-key.pem .  
-[root@hdss7-21 cert]# scp hdss7-200.host.com:/opt/ssl/certs/client-key.pem .  
-[root@hdss7-21 cert]# scp hdss7-200.host.com:/opt/ssl/certs/client.pem .  
-[root@hdss7-21 cert]# ll  
+[root@hdss7-21 bin]# mkdir certs/  
+[root@hdss7-21 certs]# scp hdss7-200.host.com:/opt/ssl/certs/apiserver-key.pem .  
+[root@hdss7-21 certs]# scp hdss7-200.host.com:/opt/ssl/certs/apiserver.pem .    
+[root@hdss7-21 certs]# scp hdss7-200.host.com:/opt/ssl/ca.pem .  
+[root@hdss7-21 certs]# scp hdss7-200.host.com:/opt/ssl/ca-key.pem .  
+[root@hdss7-21 certs]# scp hdss7-200.host.com:/opt/ssl/certs/client-key.pem .  
+[root@hdss7-21 certs]# scp hdss7-200.host.com:/opt/ssl/certs/client.pem .  
+[root@hdss7-21 certs]# ll  
 ```base
 total 24
 -rw-------. 1 root root 1679 Feb 20 21:57 apiserver-key.pem
@@ -148,8 +151,8 @@ total 24
 -rw-r--r--. 1 root root 1338 Feb 20 21:59 client.pem
 ```
 ### 配置apiserver日志审计
-[root@hdss7-21 bin]# mkdir /opt/kubernetes/server/bin/conf
-[root@hdss7-21 bin]# cd conf/  
+[root@hdss7-21 bin]# mkdir /opt/kubernetes/conf
+[root@hdss7-21 bin]# cd /opt/kubernetes/conf
 [root@hdss7-21 conf]# vi audit.yaml  
 ```base
 apiVersion: audit.k8s.io/v1beta1 # This is required.
@@ -253,6 +256,8 @@ rules:
 #### 配置supervisor启动配置
 [root@hdss7-21 bin]# vi /etc/supervisord.d/kube-apiserver.ini 
 ```base
+#!/bin/bash
+
 [program:kube-apiserver-7-21]
 command=/opt/kubernetes/server/bin/kube-apiserver-startup.sh
 numprocs=1
@@ -277,6 +282,7 @@ stdout_events_enabled=false
 
 [root@hdss7-21 bin]# supervisorctl update  
 [root@hdss7-21 bin]# supervisorctl status 
+[root@hdss7-21 bin]# tail -200f /data/logs/kubernetes/kube-apiserver/apiserver.stdout.log  
 
 #### 启停apiserver
 [root@hdss7-12 ~]# supervisorctl start kube-apiserver-7-21  
