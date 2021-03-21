@@ -293,3 +293,10 @@ stdout_events_enabled=false
 #### 查看进程
 [root@hdss7-21 bin]# netstat -lntp|grep api  
 [root@hdss7-21 bin]# ps uax|grep kube-apiserver|grep -v grep  
+
+
+#### 开放端口
+[root@hdss7-21 ~]# firewall-cmd --query-port=6443/tcp  
+[root@hdss7-22 ~]# firewall-cmd --zone=public --add-port=6443/tcp --permanent  
+success  
+[root@hdss7-22 ~]# firewall-cmd --reload  
