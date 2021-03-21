@@ -62,7 +62,7 @@ total 80
 
 ### 拷贝证书到21，22
 [root@hdss7-21 certs]# scp hdss7-200.host.com:/opt/ssl/certs/kube-proxy-client-key.pem .  
-[root@hdss7-21 certs]# scp hdss7-200.host.com:/opt/ssl/certs/kube-proxy-client.pem .
+[root@hdss7-21 certs]# scp hdss7-200.host.com:/opt/ssl/certs/kube-proxy-client.pem .  
 [root@hdss7-21 conf]# cd /opt/kubernetes/conf  
 [root@hdss7-21 conf]# kubectl config set-cluster myk8s \
  --certificate-authority=/opt/kubernetes/server/bin/certs/ca.pem \
