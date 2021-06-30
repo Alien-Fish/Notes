@@ -1,31 +1,31 @@
-###1.查询方式优化，java版
-禁止使用反射类结果集方式查询，反射消耗的性能很大，建议使用原生查询    
+### 1.查询方式优化，java版
+禁止使用反射类结果集方式查询，反射消耗的性能很大，建议使用原生查询，查询出结果再转换成业务实体类。    
 反例：  
 List<DbEntity> list = mongoTemplate.aggregate(aggregate, collectionName, DbEntity.class).getMappedResults();  
 正例:  
 AggregateIterable<Document> aggregateIterable = mongoTemplate.getCollection(collectionName).aggregate(List<Bson>);  
 
-###2.count优化
+### 2.count优化
 禁止使用count计算总数，带条件查询建议使用CountDocuments，查文档集合总数使用EstimatedDocumentCount。  
-实测：一千万数据下待条件CountDocuments查询耗时5s多，EstimatedDocumentCount估计0耗时。  
+实测：一千万数据下带条件CountDocuments查询耗时5s多，EstimatedDocumentCount估计0耗时。  
 
-###3.排序优化
+### 3.排序优化
 排序字段不使用索引情况下，当超过了系统默认的32MB内存排序，会终止报错。   
 开启allowDiskUse(true)或增大sort buffer。  
 排序字段使用索引无需开启allowDiskUse，使用索引排序性能提高数百倍。  
 实测：一千万数据下sort filed limit 1，无索引5s，有索引20ms。  
 
-###4.分页优化
-分页采用skip+limit这种组合方式，小数据响应速度还可以，但是上千万的大数据，
-skip跳过大量的数据会很慢，并且随着数据库递增会越查越慢。
-通过条件查询+排序+限制返回记录，即边查询，边排序，排序之后，抽取上一页中的最后一条记录。
-实测：200万记录下使用skip分页查询60多万耗时6s多，
+### 4.分页优化
+分页采用skip+limit这种组合方式，小数据响应速度还可以，但是上千万的大数据，skip跳过大量的数据会很慢，并且随着数据库递增会越查越慢。  
+通过条件查询+排序+限制返回记录，即边查询，边排序，排序之后，抽取上一页中的最后一条记录。  
+实测：200万记录下查60万条记录，使用skip分页查询每次一万记录，从90ms一直递增5s左右。  
+而使用最后一条记录比较方式则恒定在120ms左右，性能相差非常大。  
 
-###5.客户端连接数
+### 5.客户端连接数
 查看客户端的连接信息，根据连接数降序排序  
 netstat -nat | grep “27017” |awk ‘{print $5}’|awk -F: ‘{print $1}’|sort|uniq -c|sort -nr  
 
-###6.慢查询日志分析
+### 6.慢查询日志分析
 --设置语句：
 
 db.setProfilingLevel(1, { slowms: 4000 })
@@ -161,4 +161,4 @@ Represents lock on the oplog.
 实测：200万数据下，批次查询60几万数据耗时分析
 
 
-###7.执行计划分析
+### 7.执行计划分析
