@@ -28,32 +28,33 @@ netstat -nat | grep “27017” |awk ‘{print $5}’|awk -F: ‘{print $1}’|s
 ### 6.慢查询日志分析
 --设置语句：
 
-db.setProfilingLevel(1, { slowms: 4000 })
+db.setProfilingLevel(1, { slowms: 4000 })  
 
 --查询验证配置：
 
-rs0:PRIMARY> db.getProfilingStatus()
+rs0:PRIMARY> db.getProfilingStatus()  
 
 --查询级别：
 
-rs0:PRIMARY> db.getProfilingLevel()
+rs0:PRIMARY> db.getProfilingLevel()  
+
 1
 
 --关闭设置Profiling：  
 
-db.setProfilingLevel(0)
+db.setProfilingLevel(0)  
 
 --设置慢查询抽样比例：  
 
-rs0:PRIMARY> db.setProfilingLevel(1, { sampleRate: 0.42 })
+rs0:PRIMARY> db.setProfilingLevel(1, { sampleRate: 0.42 })  
 
 --慢查询日志表，按查询时间降序  
 
-db.system.profile.find.sort({ts:-1});
+db.system.profile.find.sort({ts:-1});  
 
 --慢查询主要分析指标：
 
-1).system.profile.op
+1).system.profile.op  
 
 主要包含如下几类
 
@@ -162,3 +163,33 @@ Represents lock on the oplog.
 
 
 ### 7.执行计划分析
+stage常见的操作描述如下：
+- COLLSCAN 集合扫描
+- IXSCAN 索引扫描
+- FETCH 检出文档
+- SHARD_MERGE 合并分片中结果
+- SHARDING_FILTER 分片中过滤掉孤立文档
+- LIMIT 使用limit 限制返回数
+- PROJECTION 使用 skip 进行跳过
+- IDHACK 针对_id进行查询
+- COUNT 利用db.coll.explain().count()之类进行count运算
+- COUNTSCAN count不使用Index进行count时的stage返回
+- COUNT_SCAN count使用了Index进行count时的stage返回
+- SUBPLA 未使用到索引的$or查询的stage返回
+- TEXT 使用全文索引进行查询时候的stage返回
+- PROJECTION 限定返回字段时候stage的返回
+
+explain 希望看到的阶段
+- Fetch+IDHACK
+- Fetch+ixscan
+- Limit+（Fetch+ixscan）
+- PROJECTION+ixscan
+- SHARDING_FILTER+ixscan
+- COUNT_SCAN
+
+explain 不希望看到的阶段
+- COLLSCAN（全表扫描）
+- SORT（使用sort但是无index）
+- 不合理的SKIP，
+- SUBPLA（未用到index的$or）
+- COUNTSCAN
