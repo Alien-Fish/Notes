@@ -163,6 +163,21 @@ Represents lock on the oplog.
 
 
 ### 7.执行计划分析
+queryPlanner分析
+- queryPlanner: queryPlanner的返回
+- queryPlanner.namespace:该值返回的是该query所查询的表
+- queryPlanner.indexFilterSet:针对该query是否有indexfilter
+- queryPlanner.winningPlan:查询优化器针对该query所返回的最优执行计划的详细内容。
+- queryPlanner.winningPlan.stage:最优执行计划的stage，这里返回是FETCH，可以理解为通过返回的index位置去检索具体的文档（stage有数个模式，将在后文中进行详解）。
+- queryPlanner.winningPlan.inputStage:用来描述子stage，并且为其父stage提供文档和索引关键字。
+- queryPlanner.winningPlan.stage的child stage，此处是IXSCAN，表示进行的是index scanning。
+- queryPlanner.winningPlan.keyPattern:所扫描的index内容，此处是did:1,status:1,modify_time: -1与scid : 1
+- queryPlanner.winningPlan.indexName：winning plan所选用的index。
+- queryPlanner.winningPlan.isMultiKey是否是Multikey，此处返回是false，如果索引建立在array上，此处将是true。
+- queryPlanner.winningPlan.direction：此query的查询顺序，此处是forward，如果用了.sort({modify_time:-1})将显示backward。
+- queryPlanner.winningPlan.indexBounds:winningplan所扫描的索引范围,如果没有制定范围就是[MaxKey, MinKey]，这主要是直接定位到mongodb的chunck中去查找数据，加快数据读取。
+- queryPlanner.rejectedPlans：其他执行计划（非最优而被查询优化器reject的）的详细返回，具体信息与winningPlan的返回中意义相同。
+
 stage常见的操作描述如下：
 - COLLSCAN 集合扫描
 - IXSCAN 索引扫描
